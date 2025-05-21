@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
+import { Link as RouterLink } from 'react-router-dom';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -43,10 +44,10 @@ export default function AppAppBar() {
         <StyledToolbar variant="dense" disableGutters>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small">
+              <Button component={RouterLink} to="/" variant="text" color="info" size="small">
                 Home
               </Button>
-              <Button variant="text" color="info" size="small">
+              <Button component={RouterLink} to="people" variant="text" color="info" size="small">
                 People
               </Button>
             </Box>
