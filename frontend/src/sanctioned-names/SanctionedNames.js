@@ -1,14 +1,14 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import AppTheme from '../shared-theme/AppTheme';
 import AppAppBar from './components/AppAppBar';
-import Hero from './components/Verify';
+import Home from './components/Home';
 
-export default function MarketingPage(props) {
+export default function SanctionedNames(props) {
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <AppAppBar />
-      <Hero />
+      <Home />
     </AppTheme>
   );
 }
