@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -77,11 +77,8 @@ export default function Home() {
             useFlexGap
             sx={{ pt: 2, width: { xs: '100%', sm: '350px' } }}
           >
-            <InputLabel htmlFor="email-sanctionednames" sx={visuallyHidden}>
-              Email
-            </InputLabel>
             <TextField
-              id="email-sanctionednames"
+              id="name_input"
               hiddenLabel
               size="small"
               variant="outlined"

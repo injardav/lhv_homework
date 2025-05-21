@@ -1,6 +1,7 @@
 package com.example.lhv_homework.controller;
 
 import com.example.lhv_homework.model.Person;
+import com.example.lhv_homework.service.PersonService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -8,9 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/names")
 public class PersonController {
@@ -24,6 +27,12 @@ public class PersonController {
     private final AtomicLong idGenerator = new AtomicLong();
 
     @GetMapping
+    public ResponseEntity<List<Person>> getAllNames() {
+        List<Person> names = personService.getAllNames();
+        return ResponseEntity.status(HttpStatus.OK).body(names);
+    }
+
+    @GetMapping("/{id}")
     public ResponseEntity<Person> getPersonById(@PathVariable Long id) {
         // Check if ID is valid
         if (!personService.isValidId(id)) {
@@ -76,7 +85,7 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
-    public boolean deletePersonById(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePersonById(@PathVariable Long id) {
         // Check if ID is valid
         if (!personService.isValidId(id)) {
             return ResponseEntity.badRequest().build();
@@ -84,10 +93,8 @@ public class PersonController {
         
         boolean deleted = redisTemplate.delete(id.toString());
 
-        if (deleted) {
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return deleted
+        ? ResponseEntity.ok().build()
+        : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
