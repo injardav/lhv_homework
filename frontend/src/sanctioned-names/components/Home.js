@@ -2,13 +2,20 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
-import InputLabel from "@mui/material/InputLabel";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import visuallyHidden from "@mui/utils/visuallyHidden";
 
 export default function Home() {
+    const [name, setName] = React.useState("");
+    const [error, setError] = React.useState(false);
+
+    const handleChange = (event) => {
+        const value = event.target.value;
+        setName(value);
+        setError(!/^(?=.*[A-Za-z])[A-Za-z\s-]{2,50}$/.test(value));
+    };
+
     return (
         <Box
             id="sanctionednames"
@@ -91,6 +98,14 @@ export default function Home() {
                             aria-label="Enter the name of the person"
                             placeholder="Name of the person"
                             fullWidth
+                            value={name}
+                            onChange={handleChange}
+                            error={error}
+                            helperText={
+                                error
+                                    ? "Name must contain letters and only letters, dashes, or spaces (max 50 characters)."
+                                    : " "
+                            }
                             slotProps={{
                                 htmlInput: {
                                     autoComplete: "off",

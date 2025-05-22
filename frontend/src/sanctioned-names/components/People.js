@@ -155,7 +155,6 @@ export default function People() {
                         size="small"
                         variant="outlined"
                         aria-label="New person name"
-                        label="New person name"
                         fullwidth
                         value={newName}
                         onChange={handleChange}
