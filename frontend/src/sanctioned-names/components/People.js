@@ -164,6 +164,12 @@ export default function People() {
                                 ? "Name must contain letters and only letters, dashes, or spaces (max 50 characters)."
                                 : " "
                         }
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                addPerson(newName);
+                            }
+                        }}
                         slotProps={{
                             htmlInput: {
                                 autoComplete: "off",
