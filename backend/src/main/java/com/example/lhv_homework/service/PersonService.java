@@ -28,7 +28,7 @@ public class PersonService {
     public boolean isValidName(String name) {
         return name != null &&
            !name.trim().isEmpty() &&
-           name.matches("^[A-Za-z\\s'-]{2,50}$"); // letters, space, dash, apostrophe, 2–50 chars
+           name.matches("^(?=.*[A-Za-z])[A-Za-z\\s-]{2,50}$"); // letters, space, dash, apostrophe, 2–50 chars, must contain at least one letter
     } 
 
     public boolean isValidId(Long id) {
