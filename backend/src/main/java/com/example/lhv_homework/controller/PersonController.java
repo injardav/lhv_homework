@@ -2,14 +2,15 @@ package com.example.lhv_homework.controller;
 
 import com.example.lhv_homework.model.Person;
 import com.example.lhv_homework.service.PersonService;
+import com.example.lhv_homework.service.RedisNameStore;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class PersonController {
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private RedisNameStore redisNameStore;
 
     @Autowired
     private PersonService personService;
@@ -28,7 +29,7 @@ public class PersonController {
 
     @GetMapping
     public ResponseEntity<List<Person>> getAllNames() {
-        List<Person> names = personService.getAllNames();
+        List<Person> names = redisNameStore.getAllNames();
         return ResponseEntity.status(HttpStatus.OK).body(names);
     }
 
@@ -39,48 +40,55 @@ public class PersonController {
             return ResponseEntity.badRequest().build();
         }
         
-        String name = redisTemplate.opsForValue().get(id.toString());
+        Map<String, String> sanctionedEntry = redisNameStore.getSanctionedEntry(id.toString());
+        String name = sanctionedEntry.get("raw_name");
+        String preprocessedName = sanctionedEntry.get("preprocessed_name");
         
         // Check if the person exists
         if (name == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         
-        Person person = new Person(id, name);
+        Person person = new Person(id, name, preprocessedName);
         return ResponseEntity.status(HttpStatus.OK).body(person);
     }
 
     @PostMapping
     public ResponseEntity<Person> createPerson(@RequestBody String name) {
         Long id = idGenerator.incrementAndGet();
-        redisTemplate.opsForValue().set(id.toString(), name);
+        String preprocessedName = personService.preprocessName(name);
+        redisNameStore.saveSanctionedName(id.toString(), name, preprocessedName);
 
-        Person person = new Person(id, name);
+        Person person = new Person(id, name, preprocessedName);
         return ResponseEntity.status(HttpStatus.CREATED).body(person);
+    }
+
+    @PostMapping("verify")
+    public ResponseEntity<Boolean> verifyPerson(@RequestBody String name) {
+        // boolean isSanctioned = personService.verifyPerson(name);
+        return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Person> updatePerson(@PathVariable Long id, @RequestBody String newName) {
-        // Check if ID is valid
-        if (!personService.isValidId(id)) {
+        if (
+            !personService.isValidId(id) ||
+            !personService.isValidName(newName)
+        ) {
             return ResponseEntity.badRequest().build();
         }
 
-        // Check if newName is valid
-        if (!personService.isValidName(newName)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        String existing = redisTemplate.opsForValue().get(id.toString());
+        String existing = redisNameStore.getRawName(id.toString());
 
         // Check if the person exists
         if (existing == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         
-        redisTemplate.opsForValue().set(id.toString(), newName);
+        String preprocessedName = personService.preprocessName(newName);
+        redisNameStore.saveSanctionedName(id.toString(), newName, preprocessedName);
 
-        Person person = new Person(id, newName);
+        Person person = new Person(id, newName, preprocessedName);
         return ResponseEntity.status(HttpStatus.OK).body(person);
     }
 
@@ -91,7 +99,7 @@ public class PersonController {
             return ResponseEntity.badRequest().build();
         }
         
-        boolean deleted = redisTemplate.delete(id.toString());
+        boolean deleted = redisNameStore.deleteSanctionedEntry(id.toString());
 
         return deleted
         ? ResponseEntity.ok().build()

@@ -16,6 +16,30 @@ export default function Home() {
         setError(!/^(?=.*[A-Za-z])[A-Za-z\s-]{2,50}$/.test(value));
     };
 
+    const verifyName = async (name) => {
+        if (error || !name.trim()) return;
+
+        try {
+            const res = await fetch(
+                "http://localhost:8080/api/v1/names/verify",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: name,
+                }
+            );
+            if (!res.ok) throw new Error("Failed to verify name");
+            const result = await res.json();
+            alert(
+                `Verification result: ${
+                    result ? "Sanctioned" : "Not Sanctioned"
+                }`
+            );
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
         <Box
             id="sanctionednames"
@@ -106,6 +130,12 @@ export default function Home() {
                                     ? "Name must contain letters and only letters, dashes, or spaces (max 50 characters)."
                                     : " "
                             }
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    verifyName(name);
+                                }
+                            }}
                             slotProps={{
                                 htmlInput: {
                                     autoComplete: "off",
@@ -119,6 +149,7 @@ export default function Home() {
                             color="primary"
                             size="small"
                             sx={{ minWidth: "fit-content" }}
+                            onClick={() => verifyName(name)}
                         >
                             Check
                         </Button>

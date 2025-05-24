@@ -1,29 +1,20 @@
 package com.example.lhv_homework.service;
 
-import com.example.lhv_homework.model.Person;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonService {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    public List<Person> getAllNames() {
-        List<Person> names = new ArrayList<>();
-        for (String key : redisTemplate.keys("*")) {
-            String name = redisTemplate.opsForValue().get(key);
-            Long id = Long.valueOf(key);
-            names.add(new Person(id, name));
-        }
-        return names;
-    }
+    private static final Set<String> STOP_WORDS = Set.of(
+        "mr", "mrs", "ms", "miss", "dr", "prof", "sir",
+        "the", "and", "of", "to", "a", "an", "jr", "sr"
+    );
 
     public boolean isValidName(String name) {
         return name != null &&
@@ -34,4 +25,50 @@ public class PersonService {
     public boolean isValidId(Long id) {
         return id != null && id > 0;
     }
+
+    public boolean verifyName(String name) {
+        if (!isValidName(name)) return false;
+
+        String preprocessedName = preprocessName(name);
+        return true;
+    }
+
+    public String normalizeName(String name) {
+        return java.text.Normalizer
+                .normalize(name, java.text.Normalizer.Form.NFKD)
+                .replaceAll("\\p{M}", "");
+    }
+
+    public String cleanName(String name) {
+        return name
+                .trim()
+                .toLowerCase()
+                .replaceAll("[^a-z\\s'-]", ""); // Keep only letters, spaces, apostrophes and dashes
+    }
+
+    public List<String> tokenizeName(String name) {
+        List<String> tokens = Arrays.stream(name.split(" "))
+                .filter(token -> !STOP_WORDS.contains(token))
+                .distinct()
+                .collect(Collectors.toList());
+
+        Collections.sort(tokens);
+        return tokens;
+    }
+
+    public String preprocessName(String rawName) {
+        // Normalize accents and diacritics
+        String normalized = normalizeName(rawName);
+
+        // Lowercase and remove punctuation
+        String cleaned = cleanName(normalized);
+
+        // Tokenize
+        List<String> tokens = tokenizeName(cleaned);
+
+        // Join back into a single string
+        return String.join(" ", tokens);
+    }
+
+
 }
