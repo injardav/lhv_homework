@@ -13,7 +13,7 @@ export default function Home() {
     const handleChange = (event) => {
         const value = event.target.value;
         setName(value);
-        setError(!/^(?=.*[A-Za-z])[A-Za-z\s,-]{2,50}$/.test(value));
+        setError(!/^(?=.*[A-Za-z])[A-Za-z\s,.-]{2,50}$/.test(value));
     };
 
     const verifyName = async (name) => {

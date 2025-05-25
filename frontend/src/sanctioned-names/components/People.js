@@ -71,7 +71,7 @@ export default function People() {
     const handleChange = (event) => {
         const value = event.target.value;
         setNewName(value);
-        setError(!/^(?=.*[A-Za-z])[A-Za-z\s,-]{2,50}$/.test(value));
+        setError(!/^(?=.*[A-Za-z])[A-Za-z\s,.-]{2,50}$/.test(value));
     };
 
     useEffect(() => {
