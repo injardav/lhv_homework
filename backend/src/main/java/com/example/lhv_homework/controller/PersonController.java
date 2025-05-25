@@ -64,9 +64,9 @@ public class PersonController {
     }
 
     @PostMapping("verify")
-    public ResponseEntity<Boolean> verifyPerson(@RequestBody String name) {
-        // boolean isSanctioned = personService.verifyPerson(name);
-        return ResponseEntity.status(HttpStatus.OK).body(true);
+    public ResponseEntity<Map<String, Object>> verifyPerson(@RequestBody String name) {
+        Map<String, Object> verification = personService.verifyName(name);
+        return ResponseEntity.status(HttpStatus.OK).body(verification);
     }
 
     @PutMapping("/{id}")

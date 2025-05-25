@@ -17,12 +17,16 @@ public class RedisNameStore {
     private final HashOperations<String, String, String> hashOps;
 
     @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     public RedisNameStore(RedisTemplate<String, String> redisTemplate) {
         this.hashOps = redisTemplate.opsForHash();
     }
 
     public List<Person> getAllNames() {
-        Set<String> keys = hashOps.keys("sanctioned:*");
+        Set<String> keys = redisTemplate.keys("sanctioned:*");
+        if (keys == null || keys.isEmpty()) return List.of();
+        
         return keys.stream()
                    .map(key -> {
                        String id = key.replace("sanctioned:", "");

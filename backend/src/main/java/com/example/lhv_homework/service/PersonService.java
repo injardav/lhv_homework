@@ -1,11 +1,17 @@
 package com.example.lhv_homework.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.lhv_homework.model.Person;
+import com.example.lhv_homework.util.NameMatcher;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.jar.Attributes.Name;
 import java.util.stream.Collectors;
 
 @Service
@@ -15,6 +21,9 @@ public class PersonService {
         "mr", "mrs", "ms", "miss", "dr", "prof", "sir",
         "the", "and", "of", "to", "a", "an", "jr", "sr"
     );
+
+    @Autowired
+    private RedisNameStore redisNameStore;
 
     public boolean isValidName(String name) {
         return name != null &&
@@ -26,11 +35,34 @@ public class PersonService {
         return id != null && id > 0;
     }
 
-    public boolean verifyName(String name) {
-        if (!isValidName(name)) return false;
+    public Map<String, Object> verifyName(String name) {
+        if (!isValidName(name)) return Map.of("isSanctioned", false, "msg", "Invalid name format");
 
         String preprocessedName = preprocessName(name);
-        return true;
+        List<String> tokensName = Arrays.asList(preprocessedName.split(" "));
+        List<Person> sanctionedPeople = redisNameStore.getAllNames();
+        
+        for (Person person : sanctionedPeople) {
+            String preprocessedSanctioned = person.getPreprocessedName();
+            List<String> tokensSanctioned = Arrays.asList(preprocessedSanctioned.split(" "));
+
+            double jaroSimilarity = NameMatcher.jaroWinklerSimilarity(preprocessedName, preprocessedSanctioned);
+            double jaccard = NameMatcher.jaccardSimilarity(preprocessedName, preprocessedSanctioned);
+            int phoneticMatches = NameMatcher.phoneticMatches(tokensName, tokensSanctioned);
+            double levenshteinNorm = NameMatcher.normalizedLevenshtein(preprocessedName, preprocessedSanctioned);
+
+            if ((jaroSimilarity >= 0.90 && jaccard > 0.6) || phoneticMatches >= 2 || levenshteinNorm >= 0.85) {
+                return Map.of(
+                    "isSanctioned", true,
+                    "sanctionedName", person.getName(),
+                    "jaro", jaroSimilarity,
+                    "jaccard", jaccard,
+                    "phoneticMatches", phoneticMatches,
+                    "levenshteinNorm", levenshteinNorm
+                );
+            }
+        }
+        return Map.of("isSanctioned", false, "msg", "Name not found in sanctioned list");
     }
 
     public String normalizeName(String name) {
