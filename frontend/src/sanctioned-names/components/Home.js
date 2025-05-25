@@ -13,7 +13,7 @@ export default function Home() {
     const handleChange = (event) => {
         const value = event.target.value;
         setName(value);
-        setError(!/^(?=.*[A-Za-z])[A-Za-z\s-]{2,50}$/.test(value));
+        setError(!/^(?=.*[A-Za-z])[A-Za-z\s,-]{2,50}$/.test(value));
     };
 
     const verifyName = async (name) => {
@@ -30,11 +30,19 @@ export default function Home() {
             );
             if (!res.ok) throw new Error("Failed to verify name");
             const result = await res.json();
-            alert(
-                `Verification result: ${
-                    result ? "Sanctioned" : "Not Sanctioned"
-                }`
-            );
+            if (result.isSanctioned) {
+                alert(
+                    `
+Name was similar to: ${result.sanctionedName}\n
+Jaro-Winkler similarity: ${result.jaro.toFixed(3)}\n
+Jaccard similarity: ${result.jaccard.toFixed(3)}\n
+Levenshtein distance norm: ${result.levenshteinNorm.toFixed(3)}\n
+Phonetic matches: ${result.phoneticMatches}
+`
+                );
+            } else {
+                alert(`Verification result: ${result.msg}`);
+            }
         } catch (err) {
             console.error(err);
         }

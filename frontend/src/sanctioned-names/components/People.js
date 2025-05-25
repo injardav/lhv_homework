@@ -71,14 +71,7 @@ export default function People() {
     const handleChange = (event) => {
         const value = event.target.value;
         setNewName(value);
-        setError(!/^(?=.*[A-Za-z])[A-Za-z\s-]{2,50}$/.test(value));
-    };
-
-    const validateNameFormat = (name) => {
-        const valid = /^(?=.*[A-Za-z])[A-Za-z\s-]{2,50}$/.test(name);
-        return valid
-            ? null
-            : "Invalid name: must contain letters, 2–50 characters, letters/spaces/dashes only.";
+        setError(!/^(?=.*[A-Za-z])[A-Za-z\s,-]{2,50}$/.test(value));
     };
 
     useEffect(() => {
