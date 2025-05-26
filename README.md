@@ -58,9 +58,9 @@ To launch the applications:
 ### Verifying Names
 
 1. Go to the **Homepage**.
-2. Enter a name to verify — for example, a **misspelled version** of a previously added name.
-3. Click **Check**.
-4. A popup will display the **most similar sanctioned name**, along with similarity scores for:
+2. Enter a name to verify — for example, a **misspelled version** of a previously added name. ![image](https://github.com/user-attachments/assets/fad9dc21-adf1-483b-a009-0b9f19ca9c50)
+4. Click **Check**.
+5. A popup will display the **most similar sanctioned name**, along with similarity scores for:
    - Jaro-Winkler
    - Jaccard
    - Levenshtein (normalized)
