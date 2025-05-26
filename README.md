@@ -1,6 +1,6 @@
 # LHV Homework
 
-This repository contains the solution to the LHV homework assignment.
+This repository contains the solution to the [LHV homework assignment](lhv-aml.pdf).
 
 ## Overview
 
