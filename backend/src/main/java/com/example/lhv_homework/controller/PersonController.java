@@ -18,19 +18,29 @@ import java.util.Map;
 @RequestMapping("/api/v1/names")
 public class PersonController {
 
-    @Autowired
-    private RedisNameStore redisNameStore;
-
-    @Autowired
-    private PersonService personService;
+    @Autowired private RedisNameStore redisNameStore;
+    @Autowired private PersonService personService;
 
     @GetMapping
+    /**
+     * Retrieves all sanctioned names currently stored in Redis.
+     *
+     * @return a ResponseEntity containing a list of Person objects.
+     */
     public ResponseEntity<List<Person>> getAllNames() {
         List<Person> names = redisNameStore.getAllNames();
         return ResponseEntity.ok().body(names);
     }
 
     @GetMapping("/{id}")
+    /**
+     * Retrieves a specific person entry by ID.
+     *
+     * @param id the ID of the person to retrieve.
+     * @return a ResponseEntity with the Person object if found,
+     *         400 Bad Request if the ID is invalid,
+     *         or 404 Not Found if no matching entry exists.
+     */
     public ResponseEntity<Person> getPersonById(@PathVariable Long id) {
         // Check if ID is valid
         if (!personService.isValidId(id)) {
@@ -51,6 +61,12 @@ public class PersonController {
     }
 
     @PostMapping
+    /**
+     * Creates a new person entry in the sanctioned list.
+     *
+     * @param name the raw name input to store.
+     * @return a ResponseEntity with the created Person object and HTTP 201 status.
+     */
     public ResponseEntity<Person> createPerson(@RequestBody String name) {
         String preprocessedName = personService.preprocessName(name);
         Long id = redisNameStore.saveSanctionedName(name, preprocessedName);
@@ -60,12 +76,28 @@ public class PersonController {
     }
 
     @PostMapping("verify")
+    /**
+     * Verifies whether the input name matches any entry in the sanctioned list
+     * using similarity and phonetic matching.
+     *
+     * @param name the input name to verify.
+     * @return a ResponseEntity containing the verification result as a map with match indicators.
+     */
     public ResponseEntity<Map<String, Object>> verifyPerson(@RequestBody String name) {
         Map<String, Object> verification = personService.verifyName(name);
         return ResponseEntity.ok().body(verification);
     }
 
     @PutMapping("/{id}")
+    /**
+     * Updates the name of a person entry by ID.
+     *
+     * @param id the ID of the person to update.
+     * @param newName the new name to replace the existing entry.
+     * @return a ResponseEntity with the updated Person object,
+     *         400 Bad Request if the ID or name is invalid,
+     *         or 404 Not Found if no entry exists for the given ID.
+     */
     public ResponseEntity<Person> updatePerson(@PathVariable Long id, @RequestBody String newName) {
         if (
             !personService.isValidId(id) ||
@@ -89,6 +121,14 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
+    /**
+     * Deletes a person entry from the sanctioned list by ID.
+     *
+     * @param id the ID of the person to delete.
+     * @return a ResponseEntity with HTTP 200 OK if deleted,
+     *         400 Bad Request if the ID is invalid,
+     *         or 404 Not Found if the entry does not exist.
+     */
     public ResponseEntity<Void> deletePersonById(@PathVariable Long id) {
         if (!personService.isValidId(id)) {
             return ResponseEntity.badRequest().build();
