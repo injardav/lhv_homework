@@ -80,9 +80,3 @@ Verification result: Name not found in sanctioned list
 
 - All names are **preprocessed** (lowercased, cleaned, tokenized, stop words removed) before similarity comparisons.
 - Matching thresholds are carefully chosen to balance precision and recall, but can be fine-tuned in the backend logic.
-
----
-
-## License
-
-This project is provided as part of the LHV assignment and is intended for demonstration and evaluation purposes only.
