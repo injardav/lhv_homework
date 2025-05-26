@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -25,12 +24,10 @@ public class PersonController {
     @Autowired
     private PersonService personService;
 
-    private final AtomicLong idGenerator = new AtomicLong();
-
     @GetMapping
     public ResponseEntity<List<Person>> getAllNames() {
         List<Person> names = redisNameStore.getAllNames();
-        return ResponseEntity.status(HttpStatus.OK).body(names);
+        return ResponseEntity.ok().body(names);
     }
 
     @GetMapping("/{id}")
@@ -50,14 +47,13 @@ public class PersonController {
         }
         
         Person person = new Person(id, name, preprocessedName);
-        return ResponseEntity.status(HttpStatus.OK).body(person);
+        return ResponseEntity.ok().body(person);
     }
 
     @PostMapping
     public ResponseEntity<Person> createPerson(@RequestBody String name) {
-        Long id = idGenerator.incrementAndGet();
         String preprocessedName = personService.preprocessName(name);
-        redisNameStore.saveSanctionedName(id.toString(), name, preprocessedName);
+        Long id = redisNameStore.saveSanctionedName(name, preprocessedName);
 
         Person person = new Person(id, name, preprocessedName);
         return ResponseEntity.status(HttpStatus.CREATED).body(person);
@@ -66,7 +62,7 @@ public class PersonController {
     @PostMapping("verify")
     public ResponseEntity<Map<String, Object>> verifyPerson(@RequestBody String name) {
         Map<String, Object> verification = personService.verifyName(name);
-        return ResponseEntity.status(HttpStatus.OK).body(verification);
+        return ResponseEntity.ok().body(verification);
     }
 
     @PutMapping("/{id}")
@@ -86,19 +82,18 @@ public class PersonController {
         }
         
         String preprocessedName = personService.preprocessName(newName);
-        redisNameStore.saveSanctionedName(id.toString(), newName, preprocessedName);
+        redisNameStore.updateSanctionedName(id.toString(), newName, preprocessedName);
 
         Person person = new Person(id, newName, preprocessedName);
-        return ResponseEntity.status(HttpStatus.OK).body(person);
+        return ResponseEntity.ok().body(person);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePersonById(@PathVariable Long id) {
-        // Check if ID is valid
         if (!personService.isValidId(id)) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         boolean deleted = redisNameStore.deleteSanctionedEntry(id.toString());
 
         return deleted
