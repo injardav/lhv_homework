@@ -33,11 +33,13 @@ class LhvHomeworkApplicationTests {
     @Autowired private RedisNameStore redisNameStore;
     @Autowired private PersonService personService;
 
+    private String testName;
     private Long testPersonId;
 
     @BeforeEach
     void setup() {
-        testPersonId = redisNameStore.saveSanctionedName("Osama Bin Laden", personService.preprocessName("Osama Bin Laden"));
+        testName = "Osama Bin Laden";
+        testPersonId = redisNameStore.saveSanctionedName(testName, personService.preprocessName(testName));
     }
 
     @AfterEach
@@ -62,7 +64,7 @@ class LhvHomeworkApplicationTests {
         verifyName(variant)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSanctioned").value(true))
-                .andExpect(jsonPath("$.sanctionedName").value("Osama Bin Laden"));
+                .andExpect(jsonPath("$.sanctionedName").value(testName));
     }
 
     @Test
@@ -109,18 +111,29 @@ class LhvHomeworkApplicationTests {
 
     @Test
     void testGetAllNames() throws Exception {
-        mockMvc.perform(get("/api/v1/names"))
+        MvcResult result = mockMvc.perform(get("/api/v1/names"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Osama Bin Laden"))
-                .andExpect(jsonPath("$[0].preprocessedName").value(personService.preprocessName("Osama Bin Laden")));
+                .andReturn();
+
+        JsonNode response = new ObjectMapper().readTree(result.getResponse().getContentAsString());
+        boolean found = false;
+        for (JsonNode person : response) {
+            if (person.get("id").asLong() == testPersonId) {
+                assertEquals(testName, person.get("name").asText());
+                assertEquals(personService.preprocessName(testName), person.get("preprocessedName").asText());
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found, "Test name not found in response list");
     }
 
     @Test
     void testGetPersonById() throws Exception {
         mockMvc.perform(get("/api/v1/names/" + testPersonId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Osama Bin Laden"))
-                .andExpect(jsonPath("$.preprocessedName").value(personService.preprocessName("Osama Bin Laden")));
+                .andExpect(jsonPath("$.name").value(testName))
+                .andExpect(jsonPath("$.preprocessedName").value(personService.preprocessName(testName)));
     }
 
     @Test
