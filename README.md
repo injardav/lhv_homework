@@ -21,6 +21,7 @@ The API is accessible via the frontend client, or manually through tools like `c
 The application consists of separate **frontend** and **backend** components, which need to be started independently.
 
 > **Note for Windows users**: Ensure Docker Desktop with WSL integration is installed and virtualization is enabled.
+> **Node version used for client installation**: v18.19.1
 
 To launch the applications:
 
@@ -31,6 +32,7 @@ To launch the applications:
     ```
 
 -   **Frontend**
+
     ```bash
     cd frontend && npm start
     ```
